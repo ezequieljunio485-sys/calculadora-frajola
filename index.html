@@ -39,7 +39,6 @@
         .btn-calc { flex: 2; padding: 15px; background: var(--primary-purple); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; }
         .btn-clear { flex: 1; padding: 15px; background: #333; border: none; border-radius: 12px; color: white; cursor: pointer; }
 
-        /* Resultado dinâmico (as cores agora são controladas pelo JS) */
         #resultBox { margin-top: 25px; padding: 20px; border: 2px solid #4ade80; background: rgba(74, 222, 128, 0.05); border-radius: 15px; text-align: center; display: none; transition: 0.3s; }
         .res-title { font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; color: #4ade80; transition: 0.3s; }
         .res-value { font-size: 1.8rem; font-weight: bold; word-break: break-all; color: #4ade80; transition: 0.3s; }
@@ -152,13 +151,11 @@
         document.getElementById('nbrSection').style.display = (name === 'linear') ? 'block' : 'none';
     }
 
-    // Função showRes atualizada para receber cor dinamicamente
     function showRes(label, val, colorHex = '#4ade80', bgRgb = '74, 222, 128') {
         const box = document.getElementById('resultBox');
         const resLabel = document.getElementById('resLabel');
         const resVal = document.getElementById('resVal');
 
-        // Aplica as cores dinâmicas
         box.style.borderColor = colorHex;
         box.style.backgroundColor = `rgba(${bgRgb}, 0.05)`;
         resLabel.style.color = colorHex;
@@ -169,11 +166,10 @@
         box.style.display = 'block';
     }
 
-    // Função que verifica a NBR e devolve a cor certa
     function checkNbrColor(incValue) {
-        if (incValue <= 8.333333333) return { hex: '#4ade80', rgb: '74, 222, 128' }; // Verde
-        if (incValue <= 12.5) return { hex: '#fbbf24', rgb: '251, 191, 36' };       // Amarelo
-        return { hex: '#f87171', rgb: '248, 113, 113' };                            // Vermelho
+        if (incValue <= 8.333333333) return { hex: '#4ade80', rgb: '74, 222, 128' };
+        if (incValue <= 12.5) return { hex: '#fbbf24', rgb: '251, 191, 36' };
+        return { hex: '#f87171', rgb: '248, 113, 113' };
     }
 
     function toggleLinear() {
@@ -190,8 +186,6 @@
         const i_input = parseFloat(document.getElementById('li').value);
 
         let incAtual = 0;
-
-        // Descobre a inclinação atual (calculada ou digitada) para aplicar a cor
         if (m === 'inc') incAtual = (h / d) * 100;
         else incAtual = i_input;
 
@@ -202,7 +196,6 @@
         else showRes("COMPRIMENTO (M)", (h/(i_input/100)).toFixed(9), colors.hex, colors.rgb);
     }
 
-    // --- Outras Funções (Mantedo a cor padrão verde) ---
     function convertUnits() {
         const val = parseFloat(document.getElementById('convInput').value);
         const from = document.getElementById('convFrom').value;
@@ -210,42 +203,50 @@
         if(isNaN(val)) return;
 
         let result = 0;
+        
+        // A lógica agora possui todas as "pontes" de Força fechadas
         const logic = {
             m_cm: 100, m_mm: 1000, cm_mm: 10,
             MPa_kgf_cm2: 10, MPa_mca: 100, mca_MPa: 0.01, mca_kgf_cm2: 0.1, kgf_cm2_MPa: 0.1, kgf_cm2_mca: 10,
-            kgf_N: 10, Pa_N_m2: 1, kN_kgf: 100, kN_Tf: 0.1, Tf_kN: 10, Tf_kgf: 1000, N_kgf: 0.1
+            // Força e Unidades Adicionais
+            kgf_N: 10, Pa_N_m2: 1, kN_kgf: 100, kN_Tf: 0.1, Tf_kgf: 1000,
+            kN_N: 1000,  // Adicionado: kN direto para N
+            Tf_N: 10000  // Adicionado: Tf direto para N
         };
 
         if(from === to) { result = val; }
         else {
             const key = `${from}_${to}`, invKey = `${to}_${from}`;
+            
+            // Checa ida ou volta direta na tabela lógica
             if(logic[key]) result = val * logic[key];
             else if(logic[invKey]) result = val / logic[invKey];
             else {
+                // Tenta conversões compostas que não estão mapeadas
                 if(from === 'm' && to === 'mm') result = val * 1000;
                 else if(from === 'mm' && to === 'm') result = val / 1000;
                 else { alert("Unidades incompatíveis!"); return; }
             }
         }
-        showRes("VALOR CONVERTIDO", result.toFixed(9)); // Usa verde padrão
+        showRes("VALOR CONVERTIDO", result.toFixed(9));
     }
 
     function toggleAreas() { const f = document.getElementById('areaSelect').value; document.getElementById('ag2').style.display = (f==='retangulo'||f==='triangulo') ? "block" : "none"; }
     function calcAreas() {
         const f=document.getElementById('areaSelect').value, v1=parseFloat(document.getElementById('av1').value), v2=parseFloat(document.getElementById('av2').value);
         let a = (f==='quadrado')?v1*v1:(f==='retangulo')?v1*v2:(f==='triangulo')?(v1*v2)/2:(f==='circulo')?Math.PI*v1*v1:(Math.PI*v1*v1)/2;
-        showRes("ÁREA (M²)", a.toFixed(9)); // Usa verde padrão
+        showRes("ÁREA (M²)", a.toFixed(9));
     }
     function toggleVol() { const f = document.getElementById('volSelect').value; document.getElementById('vg2').style.display = (f==='cubo') ? "block" : "none"; document.getElementById('vg3').style.display = (f==='esfera') ? "none" : "block"; }
     function calcVol() {
         const f=document.getElementById('volSelect').value, v1=parseFloat(document.getElementById('vv1').value), v2=parseFloat(document.getElementById('vv2').value), v3=parseFloat(document.getElementById('vv3').value);
         let v = (f==='cubo')?v1*v2*v3:(f==='cilindro')?Math.PI*v1*v1*v3:(f==='esfera')?(4/3)*Math.PI*Math.pow(v1,3):(v1*v3)/3;
-        showRes("VOLUME (M³)", v.toFixed(9)); // Usa verde padrão
+        showRes("VOLUME (M³)", v.toFixed(9));
     }
     function calcCurva() {
         const L=parseFloat(document.getElementById('cl').value), Ri=parseFloat(document.getElementById('cr').value), h=parseFloat(document.getElementById('ch').value), inc=parseFloat(document.getElementById('ci').value);
         const Creal = Math.sqrt(Math.pow(h/(inc/100), 2) + Math.pow(h, 2));
-        showRes("ÁREA (M²)", (L * Creal).toFixed(9)); // Usa verde padrão
+        showRes("ÁREA (M²)", (L * Creal).toFixed(9));
     }
     function clearAll() { document.querySelectorAll('input').forEach(i=>i.value=""); document.getElementById('resultBox').style.display='none'; }
     
