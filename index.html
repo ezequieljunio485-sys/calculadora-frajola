@@ -111,17 +111,57 @@
             <div class="input-group">
                 <label>De:</label>
                 <select id="convFrom">
-                    <optgroup label="Comprimento"><option value="m">Metros (m)</option><option value="cm">Centímetros (cm)</option><option value="mm">Milímetros (mm)</option></optgroup>
-                    <optgroup label="Pressão"><option value="MPa">MPa</option><option value="mca">mca</option><option value="kgf_cm2">kgf/cm²</option><option value="Pa">Pa (Pascal)</option><option value="N_m2">N/m²</option></optgroup>
-                    <optgroup label="Força"><option value="kN">kN</option><option value="kgf">kgf</option><option value="Tf">Tf (Tonelada-força)</option><option value="N">N (Newton)</option></optgroup>
+                    <optgroup label="Comprimento">
+                        <option value="m">Metros (m)</option>
+                        <option value="cm">Centímetros (cm)</option>
+                        <option value="mm">Milímetros (mm)</option>
+                    </optgroup>
+                    <optgroup label="Área (Novo)">
+                        <option value="m2">m²</option>
+                        <option value="cm2">cm²</option>
+                        <option value="mm2">mm²</option>
+                    </optgroup>
+                    <optgroup label="Pressão">
+                        <option value="MPa">MPa</option>
+                        <option value="mca">mca</option>
+                        <option value="kgf_cm2">kgf/cm²</option>
+                        <option value="Pa">Pa</option>
+                        <option value="N_m2">N/m²</option>
+                    </optgroup>
+                    <optgroup label="Força">
+                        <option value="kN">kN</option>
+                        <option value="kgf">kgf</option>
+                        <option value="Tf">Tf</option>
+                        <option value="N">N</option>
+                    </optgroup>
                 </select>
             </div>
             <div class="input-group">
                 <label>Para:</label>
                 <select id="convTo">
-                    <optgroup label="Comprimento"><option value="m">Metros (m)</option><option value="cm">Centímetros (cm)</option><option value="mm">Milímetros (mm)</option></optgroup>
-                    <optgroup label="Pressão"><option value="MPa">MPa</option><option value="mca">mca</option><option value="kgf_cm2">kgf/cm²</option><option value="Pa">Pa (Pascal)</option><option value="N_m2">N/m²</option></optgroup>
-                    <optgroup label="Força"><option value="kN">kN</option><option value="kgf">kgf</option><option value="Tf">Tf (Tonelada-força)</option><option value="N">N (Newton)</option></optgroup>
+                    <optgroup label="Comprimento">
+                        <option value="m">Metros (m)</option>
+                        <option value="cm">Centímetros (cm)</option>
+                        <option value="mm">Milímetros (mm)</option>
+                    </optgroup>
+                    <optgroup label="Área (Novo)">
+                        <option value="m2">m²</option>
+                        <option value="cm2">cm²</option>
+                        <option value="mm2">mm²</option>
+                    </optgroup>
+                    <optgroup label="Pressão">
+                        <option value="MPa">MPa</option>
+                        <option value="mca">mca</option>
+                        <option value="kgf_cm2">kgf/cm²</option>
+                        <option value="Pa">Pa</option>
+                        <option value="N_m2">N/m²</option>
+                    </optgroup>
+                    <optgroup label="Força">
+                        <option value="kN">kN</option>
+                        <option value="kgf">kgf</option>
+                        <option value="Tf">Tf</option>
+                        <option value="N">N</option>
+                    </optgroup>
                 </select>
             </div>
         </div>
@@ -155,12 +195,10 @@
         const box = document.getElementById('resultBox');
         const resLabel = document.getElementById('resLabel');
         const resVal = document.getElementById('resVal');
-
         box.style.borderColor = colorHex;
         box.style.backgroundColor = `rgba(${bgRgb}, 0.05)`;
         resLabel.style.color = colorHex;
         resVal.style.color = colorHex;
-
         resLabel.innerText = label;
         resVal.innerText = val;
         box.style.display = 'block';
@@ -172,30 +210,6 @@
         return { hex: '#f87171', rgb: '248, 113, 113' };
     }
 
-    function toggleLinear() {
-        const m = document.querySelector('input[name="mode"]:checked').value;
-        document.getElementById('f-h').style.display = (m==='alt')?'none':'block';
-        document.getElementById('f-d').style.display = (m==='comp')?'none':'block';
-        document.getElementById('f-i').style.display = (m==='inc')?'none':'block';
-    }
-
-    function calcLinear() {
-        const m = document.querySelector('input[name="mode"]:checked').value;
-        const h = parseFloat(document.getElementById('lh').value);
-        const d = parseFloat(document.getElementById('ld').value);
-        const i_input = parseFloat(document.getElementById('li').value);
-
-        let incAtual = 0;
-        if (m === 'inc') incAtual = (h / d) * 100;
-        else incAtual = i_input;
-
-        const colors = checkNbrColor(incAtual);
-
-        if(m === 'inc') showRes("INCLINAÇÃO (%)", ((h/d)*100).toFixed(9), colors.hex, colors.rgb);
-        else if(m === 'alt') showRes("ALTURA (M)", (d*(i_input/100)).toFixed(9), colors.hex, colors.rgb);
-        else showRes("COMPRIMENTO (M)", (h/(i_input/100)).toFixed(9), colors.hex, colors.rgb);
-    }
-
     function convertUnits() {
         const val = parseFloat(document.getElementById('convInput').value);
         const from = document.getElementById('convFrom').value;
@@ -203,34 +217,54 @@
         if(isNaN(val)) return;
 
         let result = 0;
-        
-        // A lógica agora possui todas as "pontes" de Força fechadas
         const logic = {
+            // Comprimento
             m_cm: 100, m_mm: 1000, cm_mm: 10,
+            // ÁREA (Novas pontes)
+            m2_cm2: 10000, m2_mm2: 1000000, cm2_mm2: 100,
+            // Pressão
             MPa_kgf_cm2: 10, MPa_mca: 100, mca_MPa: 0.01, mca_kgf_cm2: 0.1, kgf_cm2_MPa: 0.1, kgf_cm2_mca: 10,
-            // Força e Unidades Adicionais
-            kgf_N: 10, Pa_N_m2: 1, kN_kgf: 100, kN_Tf: 0.1, Tf_kgf: 1000,
-            kN_N: 1000,  // Adicionado: kN direto para N
-            Tf_N: 10000  // Adicionado: Tf direto para N
+            // Força
+            kgf_N: 10, Pa_N_m2: 1, kN_kgf: 100, kN_Tf: 0.1, Tf_kgf: 1000, kN_N: 1000, Tf_N: 10000
         };
 
-        if(from === to) { result = val; }
+        if(from === to) result = val;
         else {
             const key = `${from}_${to}`, invKey = `${to}_${from}`;
-            
-            // Checa ida ou volta direta na tabela lógica
             if(logic[key]) result = val * logic[key];
             else if(logic[invKey]) result = val / logic[invKey];
             else {
-                // Tenta conversões compostas que não estão mapeadas
+                // Tratamento para mm <-> m compostos
                 if(from === 'm' && to === 'mm') result = val * 1000;
                 else if(from === 'mm' && to === 'm') result = val / 1000;
-                else { alert("Unidades incompatíveis!"); return; }
+                else if(from === 'm2' && to === 'mm2') result = val * 1000000;
+                else if(from === 'mm2' && to === 'm2') result = val / 1000000;
+                else { alert("Selecione unidades da mesma categoria!"); return; }
             }
         }
         showRes("VALOR CONVERTIDO", result.toFixed(9));
     }
 
+    // Funções de Cálculo Linear
+    function toggleLinear() {
+        const m = document.querySelector('input[name="mode"]:checked').value;
+        document.getElementById('f-h').style.display = (m==='alt')?'none':'block';
+        document.getElementById('f-d').style.display = (m==='comp')?'none':'block';
+        document.getElementById('f-i').style.display = (m==='inc')?'none':'block';
+    }
+    function calcLinear() {
+        const m = document.querySelector('input[name="mode"]:checked').value;
+        const h = parseFloat(document.getElementById('lh').value);
+        const d = parseFloat(document.getElementById('ld').value);
+        const i_in = parseFloat(document.getElementById('li').value);
+        let inc = (m === 'inc') ? (h/d)*100 : i_in;
+        const c = checkNbrColor(inc);
+        if(m==='inc') showRes("INCLINAÇÃO (%)", inc.toFixed(9), c.hex, c.rgb);
+        else if(m==='alt') showRes("ALTURA (M)", (d*(i_in/100)).toFixed(9), c.hex, c.rgb);
+        else showRes("COMPRIMENTO (M)", (h/(i_in/100)).toFixed(9), c.hex, c.rgb);
+    }
+
+    // Áreas e Volumes (Mantidos)
     function toggleAreas() { const f = document.getElementById('areaSelect').value; document.getElementById('ag2').style.display = (f==='retangulo'||f==='triangulo') ? "block" : "none"; }
     function calcAreas() {
         const f=document.getElementById('areaSelect').value, v1=parseFloat(document.getElementById('av1').value), v2=parseFloat(document.getElementById('av2').value);
@@ -244,7 +278,7 @@
         showRes("VOLUME (M³)", v.toFixed(9));
     }
     function calcCurva() {
-        const L=parseFloat(document.getElementById('cl').value), Ri=parseFloat(document.getElementById('cr').value), h=parseFloat(document.getElementById('ch').value), inc=parseFloat(document.getElementById('ci').value);
+        const L=parseFloat(document.getElementById('cl').value), h=parseFloat(document.getElementById('ch').value), inc=parseFloat(document.getElementById('ci').value);
         const Creal = Math.sqrt(Math.pow(h/(inc/100), 2) + Math.pow(h, 2));
         showRes("ÁREA (M²)", (L * Creal).toFixed(9));
     }
