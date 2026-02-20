@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Engenharia Master</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --input-bg: #2d2d2d;
+            --primary-purple: #8b5cf6;
+            --neon-green: #4ade80;
+            --text-color: #e5e7eb;
+            --border-color: #3f3f46;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .container { background: var(--card-bg); padding: 24px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 600px; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-btn { flex: 1; padding: 12px; border-radius: 25px; border: 2px solid var(--border-color); background: none; color: #ef4444; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.7rem; text-transform: uppercase; min-width: 110px; }
+        .tab-btn.active { border-color: #3b82f6; color: #fff; background: rgba(59, 130, 246, 0.1); }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        h3 { margin-bottom: 20px; text-align: center; color: var(--text-color); font-size: 1.2rem; }
+
+        .radio-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-left: 10px; }
+        .radio-option { display: flex; align-items: center; gap: 10px; font-size: 1rem; cursor: pointer; font-weight: bold; }
+        .radio-option span { color: #888; font-weight: normal; font-size: 0.8rem; }
+        .radio-option input { accent-color: var(--primary-purple); width: 18px; height: 18px; }
+
+        .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-size: 0.9rem; font-weight: bold; }
+        input, select { width: 100%; padding: 14px; background: var(--input-bg); border: 1px solid var(--border-color); border-radius: 10px; color: white; font-size: 1.1rem; box-sizing: border-box; }
+
+        .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-calc { flex: 2; padding: 15px; background: var(--primary-purple); border: none; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; }
+        .btn-clear { flex: 1; padding: 15px; background: #333; border: none; border-radius: 12px; color: white; cursor: pointer; }
+
+        #resultBox { margin-top: 25px; padding: 20px; background: rgba(74, 222, 128, 0.05); border: 2px solid var(--neon-green); border-radius: 15px; text-align: center; display: none; }
+        .res-title { color: var(--neon-green); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1px; }
+        .res-value { color: var(--neon-green); font-size: 1.8rem; font-weight: bold; word-break: break-all; }
+
+        #nbrSection { margin-top: 25px; padding: 20px; background: #18181b; border-radius: 15px; font-size: 0.9rem; }
+        .nbr-title { font-weight: bold; display: block; margin-bottom: 12px; color: #fff; }
+        .nbr-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .dot { height: 10px; width: 10px; border-radius: 50%; }
+
+        .conv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('linear', this)">Rampa Linear</button>
+        <button class="tab-btn" onclick="openTab('curva', this)">Rampa Curva</button>
+        <button class="tab-btn" onclick="openTab('areas', this)">Áreas Padrões</button>
+        <button class="tab-btn" onclick="openTab('volumes', this)">Volumes</button>
+        <button class="tab-btn" onclick="openTab('conversor', this)">Conversor</button>
+    </div>
+
+    <div id="linear" class="tab-content active">
+        <h3>Cálculo de Rampa Linear</h3>
+        <div class="radio-group">
+            <label class="radio-option"><input type="radio" name="mode" value="inc" checked onclick="toggleLinear()"> Inclinação (%) <span>9 casas</span></label>
+            <label class="radio-option"><input type="radio" name="mode" value="alt" onclick="toggleLinear()"> Altura (m) <span>9 casas</span></label>
+            <label class="radio-option"><input type="radio" name="mode" value="comp" onclick="toggleLinear()"> Comprimento (m) <span>9 casas</span></label>
+        </div>
+        <div class="input-group" id="f-h"><label>Altura (h) em metros</label><input type="number" id="lh" step="any" placeholder="0.000000000"></div>
+        <div class="input-group" id="f-d"><label>Comprimento (d) em metros</label><input type="number" id="ld" step="any" placeholder="0.000000000"></div>
+        <div class="input-group" id="f-i" style="display:none"><label>Inclinação (%)</label><input type="number" id="li" step="any" placeholder="Ex: 8.333333333"></div>
+        <div class="btn-row"><button class="btn-calc" onclick="calcLinear()">Calcular</button><button class="btn-clear" onclick="clearAll()">Limpar</button></div>
+    </div>
+
+    <div id="curva" class="tab-content">
+        <h3>Área de Rampa Curva</h3>
+        <div class="input-group"><label>Largura da Rampa (m)</label><input type="number" id="cl" step="any"></div>
+        <div class="input-group"><label>Raio Interno (m)</label><input type="number" id="cr" step="any"></div>
+        <div class="input-group"><label>Desnível / Altura (m)</label><input type="number" id="ch" step="any"></div>
+        <div class="input-group"><label>Inclinação (%)</label><input type="number" id="ci" step="any"></div>
+        <div class="btn-row"><button class="btn-calc" onclick="calcCurva()">Calcular Área</button><button class="btn-clear" onclick="clearAll()">Limpar</button></div>
+    </div>
+
+    <div id="areas" class="tab-content">
+        <h3>Áreas Padrões</h3>
+        <div class="input-group"><label>Forma:</label><select id="areaSelect" onchange="toggleAreas()"><option value="quadrado">Quadrado</option><option value="retangulo">Retângulo</option><option value="triangulo">Triângulo</option><option value="circulo">Círculo</option><option value="semicirculo">Semicírculo</option></select></div>
+        <div class="input-group" id="ag1"><label id="al1">Lado (m)</label><input type="number" id="av1" step="any"></div>
+        <div class="input-group" id="ag2" style="display:none"><label id="al2">Altura (m)</label><input type="number" id="av2" step="any"></div>
+        <div class="btn-row"><button class="btn-calc" onclick="calcAreas()">Calcular Área</button><button class="btn-clear" onclick="clearAll()">Limpar</button></div>
+    </div>
+
+    <div id="volumes" class="tab-content">
+        <h3>Cálculo de Volumes</h3>
+        <div class="input-group"><label>Sólido:</label><select id="volSelect" onchange="toggleVol()"><option value="cubo">Cubo / Prisma</option><option value="cilindro">Cilindro</option><option value="esfera">Esfera</option><option value="piramide">Pirâmide</option></select></div>
+        <div class="input-group" id="vg1"><label id="vl1">Comp (m)</label><input type="number" id="vv1" step="any"></div>
+        <div class="input-group" id="vg2"><label id="vl2">Larg (m)</label><input type="number" id="vv2" step="any"></div>
+        <div class="input-group" id="vg3"><label id="vl3">Alt (m)</label><input type="number" id="vv3" step="any"></div>
+        <div class="btn-row"><button class="btn-calc" onclick="calcVol()">Calcular Volume</button><button class="btn-clear" onclick="clearAll()">Limpar</button></div>
+    </div>
+
+    <div id="conversor" class="tab-content">
+        <h3>Conversão de Unidades Técnica</h3>
+        <div class="input-group">
+            <label>Valor para converter:</label>
+            <input type="number" id="convInput" step="any" placeholder="Digite o valor">
+        </div>
+        <div class="conv-grid">
+            <div class="input-group">
+                <label>De:</label>
+                <select id="convFrom">
+                    <optgroup label="Comprimento">
+                        <option value="m">Metros (m)</option>
+                        <option value="cm">Centímetros (cm)</option>
+                        <option value="mm">Milímetros (mm)</option>
+                    </optgroup>
+                    <optgroup label="Pressão (Tabela Amarela)">
+                        <option value="MPa">MPa</option>
+                        <option value="mca">mca</option>
+                        <option value="kgf_cm2">kgf/cm²</option>
+                        <option value="Pa">Pa (Pascal)</option>
+                        <option value="N_m2">N/m²</option>
+                    </optgroup>
+                    <optgroup label="Força (Base 1kN)">
+                        <option value="kN">kN</option>
+                        <option value="kgf">kgf</option>
+                        <option value="Tf">Tf (Tonelada-força)</option>
+                        <option value="N">N (Newton)</option>
+                    </optgroup>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>Para:</label>
+                <select id="convTo">
+                    <optgroup label="Comprimento">
+                        <option value="m">Metros (m)</option>
+                        <option value="cm">Centímetros (cm)</option>
+                        <option value="mm">Milímetros (mm)</option>
+                    </optgroup>
+                    <optgroup label="Pressão (Tabela Amarela)">
+                        <option value="MPa">MPa</option>
+                        <option value="mca">mca</option>
+                        <option value="kgf_cm2">kgf/cm²</option>
+                        <option value="Pa">Pa (Pascal)</option>
+                        <option value="N_m2">N/m²</option>
+                    </optgroup>
+                    <optgroup label="Força (Base 1kN)">
+                        <option value="kN">kN</option>
+                        <option value="kgf">kgf</option>
+                        <option value="Tf">Tf (Tonelada-força)</option>
+                        <option value="N">N (Newton)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+        <div class="btn-row">
+            <button class="btn-calc" onclick="convertUnits()">Converter Agora</button>
+            <button class="btn-clear" onclick="clearAll()">Limpar</button>
+        </div>
+    </div>
+
+    <div id="resultBox">
+        <div class="res-title" id="resLabel">RESULTADO</div>
+        <div class="res-value" id="resVal">0.000000000</div>
+    </div>
+
+    <div id="nbrSection">
+        <span class="nbr-title">Referência NBR 9050:</span>
+        <div class="nbr-item"><span class="dot" style="background:#4ade80"></span> Até 8,333333333%: Ideal</div>
+        <div class="nbr-item"><span class="dot" style="background:#fbbf24"></span> 8,34% a 12,5%: Reformas</div>
+        <div class="nbr-item"><span class="dot" style="background:#f87171"></span> Acima de 12,5%: Não atende</div>
+    </div>
+</div>
+
+<script>
+    function openTab(name, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(name).classList.add('active');
+        btn.classList.add('active');
+        document.getElementById('resultBox').style.display = 'none';
+        document.getElementById('nbrSection').style.display = (name === 'linear') ? 'block' : 'none';
+    }
+
+    function showRes(label, val) {
+        document.getElementById('resLabel').innerText = label;
+        document.getElementById('resVal').innerText = val;
+        document.getElementById('resultBox').style.display = 'block';
+    }
+
+    function convertUnits() {
+        const val = parseFloat(document.getElementById('convInput').value);
+        const from = document.getElementById('convFrom').value;
+        const to = document.getElementById('convTo').value;
+        if(isNaN(val)) return;
+
+        let result = 0;
+
+        // Tabelas de Conversão baseadas nas imagens enviadas
+        const logic = {
+            // Comprimento
+            m_cm: 100, m_mm: 1000, cm_mm: 10,
+            // Pressão / Tensão (Tabela Principal)
+            MPa_kgf_cm2: 10, MPa_mca: 100, mca_MPa: 0.01, mca_kgf_cm2: 0.1, kgf_cm2_MPa: 0.1, kgf_cm2_mca: 10,
+            // Força e Unidades Adicionais (Tabela Amarela)
+            kgf_N: 10, Pa_N_m2: 1, kN_kgf: 100, kN_Tf: 0.1, Tf_kN: 10, Tf_kgf: 1000, N_kgf: 0.1
+        };
+
+        if(from === to) { result = val; }
+        else {
+            const key = `${from}_${to}`;
+            const invKey = `${to}_${from}`;
+
+            if(logic[key]) result = val * logic[key];
+            else if(logic[invKey]) result = val / logic[invKey];
+            else {
+                // Conversões compostas básicas (ex: m para mm via cm)
+                if(from === 'm' && to === 'mm') result = val * 1000;
+                else if(from === 'mm' && to === 'm') result = val / 1000;
+                else { alert("Unidades incompatíveis!"); return; }
+            }
+        }
+
+        showRes("VALOR CONVERTIDO", result.toFixed(9));
+    }
+
+    // Mantendo as outras funções
+    function toggleLinear() {
+        const m = document.querySelector('input[name="mode"]:checked').value;
+        document.getElementById('f-h').style.display = (m==='alt')?'none':'block';
+        document.getElementById('f-d').style.display = (m==='comp')?'none':'block';
+        document.getElementById('f-i').style.display = (m==='inc')?'none':'block';
+    }
+    function calcLinear() {
+        const m = document.querySelector('input[name="mode"]:checked').value;
+        const h = parseFloat(document.getElementById('lh').value), d = parseFloat(document.getElementById('ld').value), i = parseFloat(document.getElementById('li').value);
+        if(m==='inc') showRes("INCLINAÇÃO (%)", ((h/d)*100).toFixed(9));
+        else if(m==='alt') showRes("ALTURA (M)", (d*(i/100)).toFixed(9));
+        else showRes("COMPRIMENTO (M)", (h/(i/100)).toFixed(9));
+    }
+    function toggleAreas() { const f = document.getElementById('areaSelect').value; document.getElementById('ag2').style.display = (f==='retangulo'||f==='triangulo') ? "block" : "none"; }
+    function calcAreas() {
+        const f=document.getElementById('areaSelect').value, v1=parseFloat(document.getElementById('av1').value), v2=parseFloat(document.getElementById('av2').value);
+        let a = (f==='quadrado')?v1*v1:(f==='retangulo')?v1*v2:(f==='triangulo')?(v1*v2)/2:(f==='circulo')?Math.PI*v1*v1:(Math.PI*v1*v1)/2;
+        showRes("ÁREA (M²)", a.toFixed(9));
+    }
+    function toggleVol() { const f = document.getElementById('volSelect').value; document.getElementById('vg2').style.display = (f==='cubo') ? "block" : "none"; document.getElementById('vg3').style.display = (f==='esfera') ? "none" : "block"; }
+    function calcVol() {
+        const f=document.getElementById('volSelect').value, v1=parseFloat(document.getElementById('vv1').value), v2=parseFloat(document.getElementById('vv2').value), v3=parseFloat(document.getElementById('vv3').value);
+        let v = (f==='cubo')?v1*v2*v3:(f==='cilindro')?Math.PI*v1*v1*v3:(f==='esfera')?(4/3)*Math.PI*Math.pow(v1,3):(v1*v3)/3;
+        showRes("VOLUME (M³)", v.toFixed(9));
+    }
+    function calcCurva() {
+        const L=parseFloat(document.getElementById('cl').value), Ri=parseFloat(document.getElementById('cr').value), h=parseFloat(document.getElementById('ch').value), inc=parseFloat(document.getElementById('ci').value);
+        const Creal = Math.sqrt(Math.pow(h/(inc/100), 2) + Math.pow(h, 2));
+        showRes("ÁREA (M²)", (L * Creal).toFixed(9));
+    }
+    function clearAll() { document.querySelectorAll('input').forEach(i=>i.value=""); document.getElementById('resultBox').style.display='none'; }
+    
+    toggleVol(); toggleAreas();
+</script>
+</body>
+</html>
